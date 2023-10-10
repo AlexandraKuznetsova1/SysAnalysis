@@ -1,0 +1,52 @@
+# С помощью функции generate_keys можно сгенерировать закрытый и открытый ключи цифровой подписи
+from generate_keys import generate_keys
+
+private_key_filename = 'private_key.pem'
+public_key_filename = 'public_key.pem'
+
+generate_keys(private_key_filename, public_key_filename)
+#Закрытый и открытый ключи сохраняются в отдельные файлы
+with open(private_key_filename, 'r') as file:
+    print(file.read())
+with open(public_key_filename, 'r') as file:
+    print(file.read())
+
+#Загрузим ключи
+import load_keys
+
+private_key = load_keys.load_private_key(private_key_filename)
+public_key = load_keys.load_public_key(public_key_filename)
+private_key, public_key
+#Создадим блокчейн. При создании блокчейна нужно указать имя файла, в котором он будет храниться
+from Blockchain import Blockchain
+
+blockchain_filename = 'blockchain.txt'
+
+blockchain = Blockchain.create(blockchain_filename)
+blockchain
+#Добавим в блокчейн несколько блоков. При добавлении блоков они подписываются
+blockchain.add_block('Начальный блок', private_key)
+blockchain.add_block('Блокчейн — выстроенная по определённым правилам непрерывная последовательная цепочка блоков (связный список), содержащих информацию.', private_key)
+blockchain.add_block('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', private_key)
+blockchain.add_block('Разработать программу, формирующую блокчейн на базе криптостойкой хеш-функции.', private_key)
+blockchain.add_block('2+2=4', private_key)
+#Блокчейн хранится в файле в следующем формате
+with open(blockchain_filename, 'r') as file:
+    print(file.read())
+#Просмотрим информацию об одном из блоков
+print(blockchain[1].info())
+#Проверим блокчейн. Этот метод проверяет как хеши блокчейна, так цифровые подписи блоков
+blockchain.verify(public_key)
+blockchain.add_block('Разработать программу, формирующую блок-чейн на базе криптостойкой хеш-функции.', private_key)
+#Можно проверить не весь блокчейн, а только его часть
+blockchain.verify(public_key, first_block=1, last_block=3)
+#Также можно отдельно проверить цифровые подписи произвольного блока
+blockchain[1].verify_signatures(public_key)
+#Этот метод имитирует попытку изменения данных в блоке злоумышленником
+import evil
+
+evil.change_block_data(blockchain[1], 'Данные изменены злоумышленником')
+#Проверка блокчейна показывает, что данные были изменены
+blockchain.verify(public_key)
+blockchain.verify(public_key, first_block=1, last_block=3)
+blockchain[1].verify_signatures(public_key)
